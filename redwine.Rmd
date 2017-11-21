@@ -1,0 +1,792 @@
+Red Wine Quality Exploration by Yiyi Tang
+========================================================
+
+```{r echo=FALSE, message=FALSE, warning=FALSE, packages}
+
+library(ggplot2)
+library(dplyr)
+library(knitr)
+source("https://raw.githubusercontent.com/briatte/ggcorr/master/ggcorr.R")
+
+```
+
+```{r echo=FALSE, Load_the_Data}
+
+wine <- read.csv('wineQualityReds.csv')
+
+```
+
+The dataset is about red wine quality, containing 1599 observations (wine) of \
+12 variables (chemical properties of wine).The variable 'quality' (based on \
+sensory data) score between 0 (very bad) and 10 (very excellent). 
+
+# Univariate Plots Section
+
+```{r echo=FALSE, message=FALSE, warning=FALSE, Univariate_Plots_1}
+
+summary(wine$quality_f)
+summary(wine$quality)
+wine$quality_f <- factor(wine$quality, 
+                       labels = c('3','4','5','6','7','8'))
+
+```
+
+
+```{r echo=FALSE, message=FALSE, warning=FALSE, Univariate_Plots_12}
+
+str(wine)
+names(wine)
+summary(wine)
+table(wine$quality)
+
+```
+
+All variables are numeric type except for quality, which is integer. I will \
+create a variable named 'quality_f' as factor. 
+
+
+```{r echo=FALSE, message=FALSE, warning=FALSE, Univariate_Plots_6}
+
+qplot(x = quality, data = wine,
+      binwidth=0.3,
+      fill=I('grey'), 
+      col=I('black'))
+
+```
+
+In the dataset, 'quality' variable score between 3 - 8. Above results shows \
+the distribution of red wine of each quality score in the dataset. We can see \
+that most red wine's quality score between 5 and 6. 
+
+
+
+```{r echo=FALSE, message=FALSE, warning=FALSE, Univariate_Plots_2}
+
+summary(wine$alcohol)
+ qplot(x = alcohol, data = wine, 
+      binwidth = 0.1)+
+  scale_x_continuous(breaks = seq(8, 15, 0.5))
+
+```
+
+There's a peak around 9.2 - 9.8 in distribution of 'alcohol' variable. Also, I \
+noticed few wine has exremely high alcohol (above 14, and between 14.5 and \
+15.0) and extremely low alcohol (below 9). Let's look at these outliners in \
+the alcohol.
+
+```{r echo=FALSE, message=FALSE, warning=FALSE, by_1}
+
+by(wine$alcohol, wine$quality, summary)
+
+```
+
+It looks like alcohol outliners which have extremely low alcohol (below 9) \
+tend to be in low quality category 3, 4, 5 and 6, while alcohol outliners \
+which have extremely high alcohol (above 14) tend to be in high quality \
+category 5,6,7 and 8.
+
+```{r echo=FALSE, message=FALSE, warning=FALSE, Univariate_Plots_3}
+
+qplot(x=alcohol, data=wine)+
+  facet_wrap(~quality)
+
+qplot(x=alcohol, data=wine,
+      binwidth=0.3)+
+  facet_wrap(~quality)
+
+```
+
+```{r echo=FALSE, message=FALSE, warning=FALSE, Univariate_Plots_4}
+
+quality_group <- group_by(wine,quality)
+
+wine.alco_by_quality <- summarise(quality_group,
+                       alco_mean=mean(alcohol),
+                       alco_median=median(alcohol),
+                       n=n())
+head(wine.alco_by_quality)
+
+```
+
+I grouped a subset table 'wine.alco_by_quality', describing alcohol \
+categorized in quality. I noticed that the best quality category has the \
+biggest mean 12.09 and median of alcohol 12.88. 
+
+```{r echo=FALSE, message=FALSE, warning=FALSE, Univariate_Plots_5}
+
+by(wine$alcohol,wine$quality,summary)
+
+ggplot(aes(x=quality_f, y=alcohol), data= wine)+
+  geom_boxplot()+
+  scale_y_continuous(breaks=seq(8,13,1),limits = c(9,13))
+
+```
+
+I looked at the mean and median of alcohol in each quality category, and I'm \
+curious to find out if alcohol influence the quality of wine. And if there's \
+other variables together with alcohol influence the quality.
+
+
+```{r echo=FALSE, message=FALSE, warning=FALSE, Univariate_Plots_7}
+
+summary(wine$citric.acid)
+
+qplot(x = citric.acid, data = wine,
+      binwidth=0.01)
+
+```
+
+Citric.acid is slightly skewed to the right. There's a high peak in \
+'citric.acid' variable's distribution at 0.00. It's normal becasue citric.acid\
+often found small quantities in wine.
+
+There's another 3 relatively small peaks in the distribution. I also noticed \
+an outliner, which is at 1.00. Because citric.acid can add 'freshness' and \
+flavor to wines, I'm wondering if higher citric.acid positvely influence quality\
+of wines. And if the wine which have citric.acid equal to 1 are in better \
+quality.
+
+```{r echo=FALSE, message=FALSE, warning=FALSE, Univariate_Plots_14}
+
+subset(wine, citric.acid>=1)
+
+```
+
+While it surprised me that the wine having maximum citric.acid is in quality 4, \
+which is not counted for a better quality.
+
+```{r echo=FALSE, message=FALSE, warning=FALSE, Univariate_Plots_8}
+
+summary(wine$fixed.acidity)
+qplot(x = fixed.acidity, data=wine,
+      binwidth=0.1,
+      fill=I('grey'),
+      color=I('black'))+
+  scale_x_continuous(breaks=seq(4,16,1))
+
+```
+
+
+```{r echo=FALSE, message=FALSE, warning=FALSE, Univariate_Plots_9}
+
+summary(wine$volatile.acidity)
+qplot(x = volatile.acidity, data=wine,
+      binwidth=0.01,
+      fill=I('grey'),
+      color=I('black'))+
+  scale_x_continuous(breaks=seq(0,2,0.1))
+
+```
+
+Above two histograms show distribution of 'fixed.acidity' variable (do not \
+evaporate readily) and 'volatile.acidity' variable (represent the amount of \
+acetic acid in wine, which at too high of levels can lead to an unpleasant, \
+vinegar taste). 
+
+
+```{r echo=FALSE, message=FALSE, warning=FALSE, Univariate_Plots_10}
+
+summary(wine$residual.sugar)
+qplot(x=residual.sugar, data=wine,
+      binwidth=0.1)+
+  scale_x_continuous(breaks=seq(0,16,1))
+
+```
+
+The residual.sugar is skewed to the right, with some outliners above 11. Most \
+of residual.sugar is between 1 and 3.
+
+
+```{r echo=FALSE,message=FALSE, warning=FALSE, Univariate_Plots_11}
+
+summary(wine$chlorides)
+qplot(x=chlorides, data=wine,
+      binwidth=0.005)+
+  scale_x_continuous(breaks=seq(0,0.65,0.05))
+
+```
+
+Most of the chlorides are between 0.05 and 0.12. 
+
+```{r echo=FALSE,message=FALSE, warning=FALSE, Univariate_Plots_15}
+
+summary(wine$density)
+
+qplot(x=density, data=wine,
+      binwidth=0.0001)+
+  scale_x_continuous(breaks=seq(0.99,2,0.001))
+
+```
+
+Around 75% wine have density 0.9978. The median density is 0.9968, and the mean\
+density is 0.9967, which these two are pretty close.
+
+```{r echo=FALSE,message=FALSE, warning=FALSE, Univariate_Plots_16}
+
+summary(wine$pH)
+qplot(x=pH, data=wine,
+      binwidth=0.01)
+
+```
+
+pH is fairly normally distributed with a few outliners. The mean pH is 3.311, \
+and around 75% of pH is 3.4. 
+
+```{r echo=FALSE, message=FALSE, warning=FALSE, Univariate_Plots_20}
+
+quality_bucket = cut(wine$quality,3,labels=c('Low (Rating 3 - 4)','Medium (Rating 5 - 6) ','High (Rating 7 - 8)'))
+table(quality_bucket)
+
+```
+
+```{r echo=FALSE,message=FALSE, warning=FALSE, Univariate_Plots_17}
+
+qplot(x=quality_bucket,data=wine)
+
+```
+
+I created quality_bucket to group quality ratings. Wines receiving 3 and 4 quality\
+score grouped in "Low" quality_bucket, wines receiving 5 and 6 quality score \
+grouped in "Medium" quality_bucket, and wines receiving 7 and 8 quality score\
+grouped in "High" quality_bucket.
+
+# Univariate Analysis
+
+### What is the structure of your dataset?
+There are 1599 wine observations in the dataset with 12 features \
+(fixed acidity, volatile acidity, citric acid, residual sugar, chlorides, \
+free sulfur dioxide, total sulfur dioxide, density, pH, sulphates, alcohol and \
+quality). The output variable quality is based on sensor data, scoring between \
+0 and 10.
+
+I set the 'quality' variable as ordered factor variable. Its levels are showed \
+as below:
+
+(very bad) -----> (very excellent)
+
+**quality**: 0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10
+
+While in the dataset, quality variable ranges between 3 and 8.
+
+Other observations:
+
+* Most wine's quality are 5 and 6.
+* The mean alcohol is 10.42%, and the median alcohol is 10.20%.
+* The min quality of wine in the dataset is 3, the max quality is 8, \
+and the mean quality is 5.636.
+* About 75% of wine contains 2.6 g / dm^3 residual.sugar. 
+* The mean citric.acid is 0.271 g / dm^3, and the max citric.acid is 1 g / dm^3.
+
+### What is/are the main feature(s) of interest in your dataset?
+The main features of interest in my dataset are quality, alcohol and \
+citric.acid. I'd like to know which feature or features combination are best \
+for predicting the quality of wine. 
+
+I suspect alcohol or citric.acid and some combination of the other variables\
+can influence the quality of wine. This suspection may help me build a \
+predictive model for wine quality in the following analysis.
+
+### What other features in the dataset do you think will help support your \
+investigation into your feature(s) of interest?
+Features like density and pH will help support my investigation \
+because I suspect alcohol might influence the density of water in wine, and pH \
+might be influenced by alcohol and citric.acid.
+
+### Did you create any new variables from existing variables in the dataset?
+I created 'quality_f' variable as factor for further bivariate analysis, and\
+a quality bucket grouping qualities into 'low' ,'medium' and 'high'. Also\
+I created a subset named 'wine.alco_by_quality' to better see if there's \
+correlation between these two variables.
+
+### Of the features you investigated, were there any unusual distributions? \
+Did you perform any operations on the data to tidy, adjust, or change the form \
+of the data? If so, why did you do this?
+
+* I found some outliners in alcohol variable (below 9 or above 14). Also, I 
+noticed that the best quality category has the biggest mean 12.09 and median of \
+alcohol 12.88. But it doesn't mean any liner or correlation between alcohol and\
+quality. I will further analysize them in the following section.
+
+* Citric.acid distribution has several peaks and is slightly skewed to the \
+right. The highest peak is at 0.00, and there's another 3 relatively small \
+peaks in the distribution. I also noticed an outliner, which is at 1.00. I \
+checked the wine with 1.00 citric.acid and found it is in quality 4.
+
+
+# Bivariate Plots Section
+
+```{r echo=FALSE, message=FALSE, warning=FALSE, Bivariate_Plots_17}
+
+ggcorr(wine)
+
+```
+
+From this matrix, I noticed that among my featured interested variables (alcohol,\
+quality, pH, density and citric.acid), there's some meaningful correlations I would\
+like to take a look, such as correlation of quality and alcohol, alcohol and pH, \
+citric.acid and density, citric.acid and pH, citric.acid and quality. Becasue \
+these correlation value seem to be bigger than 0.3 or smaller than -0.3, which\
+means may have a meaningful correlation.
+
+### Relationship between alcohol and quality 
+
+```{r echo=FALSE, message=FALSE, warning=FALSE, Bivariate_Plots_1}
+
+ggplot(aes(x=alcohol,y=quality),data=wine)+
+  geom_jitter(alpha=0.3,color='orange')+
+  geom_smooth(method=lm,se=FALSE,size=1)+
+  scale_x_continuous(breaks=seq(9,14,1))+
+  xlim(9,14)
+
+```
+
+I removed outliners in alcohol to see if the relationship between alcohol and \
+quality would be stronger. It turned out just a little bit stronger. So It's \
+better to use Pearson's correlation to test these two. And maybe there's more \
+variables participate into this relationship. 
+
+```{r echo=FALSE, message=FALSE, warning=FALSE, Bivariate_Plots_2}
+ggplot(aes(x=quality_f, y=alcohol,color=quality_f), data= wine)+
+  geom_boxplot()+
+  geom_jitter(alpha=0.3,size=1)+
+  scale_color_brewer(type="seq",
+                     guide=guide_legend(title='Quality Groups'))
+
+```
+
+```{r echo=FALSE, message=FALSE, warning=FALSE, Bivariate_Plots_3}
+
+cor.test(wine$alcohol, wine$quality)
+
+```
+
+Above Pearson's correlation result shows there's a moderate correlation between \
+alcohol and quality. To be more specific, wine with higher alcohol tend to be \
+in better quality.
+### Relationship between citric.acid and density
+
+```{r}
+
+ggplot(aes(x=citric.acid,y=density),data=wine)+
+  geom_point(alpha=0.3,size=1)+
+  geom_smooth(method=lm, se=FALSE, size=0.6)
+
+```
+
+```{r}
+cor.test(wine$citric.acid,wine$density)
+```
+
+There's a positive meaningful but small correlation between citric.acid and density.
+
+### Relationship between alcohol and pH
+
+```{r echo=FALSE, message=FALSE, warning=FALSE, Bivariate_Plots_5}
+
+ggplot(aes(x=pH,y=alcohol),data=wine)+
+  geom_point(alpha=0.3)+
+  coord_trans(x='sqrt')+
+  geom_smooth(method=lm,se=FALSE,size=1)
+
+cor.test(wine$alcohol,wine$pH)
+```
+
+Alcohol and pH have few correlation.
+
+### Relationship between alcohol and density
+
+```{r echo=FALSE, message=FALSE, warning=FALSE, Bivariate_Plots_6}
+
+ggplot(aes(x=alcohol,y=density),data=wine)+
+  geom_point(alpha=0.3, color='orange')+
+  coord_trans(y='sqrt')+
+  geom_smooth(method=lm,se=FALSE,size=1)
+
+cor.test(wine$alcohol,wine$density)
+
+```
+
+There's a moderate correlation between alcohol and density variables. To be \
+specific, wine with higher alcohol tend to have lower density. 
+
+### Relationship between citric.acid and quality
+
+```{r echo=FALSE, message=FALSE, warning=FALSE, Bivariate_Plots_8}
+
+ggplot(aes(x=citric.acid,y=quality),data=wine)+
+  geom_jitter(alpha=0.3,color='orange')+
+  geom_smooth(method=lm,se=FALSE,size=1)
+
+cor.test(wine$citric.acid,wine$quality)
+
+```
+
+```{r echo=FALSE, message=FALSE, warning=FALSE, Bivariate_Plots_9}
+
+ggplot(aes(x=quality_f,y=citric.acid),data=wine)+
+  geom_boxplot()+
+  ylim(0,0.6)
+
+```
+
+```{r echo=FALSE, message=FALSE, warning=FALSE, Bivariate_Plots_10}
+
+by(wine$citric.acid,wine$quality,summary)
+
+```
+
+```{r echo=FALSE, message=FALSE, warning=FALSE, Bivariate_Plots_19}
+by(wine$citric.acid,wine$quality,summary)
+
+wine.citric_by_quality <- summarise(quality_group,
+                                    citric_mean=mean(citric.acid),
+                                    n())
+head(wine.citric_by_quality)
+
+ggplot(aes(x=quality,y=citric_mean), data=wine.citric_by_quality)+
+  geom_jitter(color='blue')+
+  geom_smooth(method=lm, color='grey')
+
+```
+
+Better quality wine have bigger mean of citric.acid.
+
+
+While citric.acid would add 'freshness' or flavor to wine, there's few correlation\
+between quality and citric.acid. But there's a tendency that better quality wine\
+has higher mean citric.acid. 
+
+### Relationship between citric.acid and alcohol
+
+```{r echo=FALSE, message=FALSE, warning=FALSE, Bivariate_Plots_11}
+
+ggplot(aes(x=citric.acid,y=alcohol),data=subset(wine,citric.acid>0))+
+  geom_jitter(alpha=0.3,color='orange')+
+  scale_y_log10()+
+  geom_smooth(method=lm,se=FALSE,size=1)
+
+cor.test(wine$citric.acid,wine$alcohol)
+
+```
+
+Few correlation between citric.acid and alcohol.
+
+### Relationship between pH and density
+
+```{r echo=FALSE, message=FALSE, warning=FALSE, Bivariate_Plots_12}
+
+ggplot(aes(x=density, y=pH),data=wine)+
+  geom_point(alpha=0.3,color='orange')+
+  geom_smooth(method=lm,se=FALSE,size=1)
+
+```
+
+
+```{r echo=FALSE, message=FALSE, warning=FALSE, Bivariate_Plots_13}
+
+cor.test(wine$pH, wine$density)
+
+```
+
+There's a meaningful but small correlation between pH and density. 
+
+### Relationship between pH and citric.acid
+
+```{r echo=FALSE, message=FALSE, warning=FALSE, Bivariate_Plots_14}
+
+ggplot(aes(x=citric.acid,y=pH),data=wine)+
+  geom_point(color='orange',alpha=0.3)+
+  geom_smooth(method=lm,se=FALSE,size=1)
+
+```
+
+```{r echo=FALSE, message=FALSE, warning=FALSE, Bivariate_Plots_15}
+
+cor.test(wine$citric.acid,wine$pH)
+
+```
+
+pH and citric.acid have a moderate negative correlation around -0.5419.
+
+# Bivariate Analysis
+
+> **Tip**: As before, summarize what you found in your bivariate explorations
+here. Use the questions below to guide your discussion.
+
+### Talk about some of the relationships you observed in this part of the \
+investigation. How did the feature(s) of interest vary with other features in \
+the dataset?
+
+* From the ggcorr correlation matrix, I found there might be some meaningful \
+correlation between quality and alcohol, alcohol and pH, citric.acid and density,\
+citric.acid and pH, citric.acid and quality.
+
+* I found alcohol and quality have a moderate correlation that wine with \
+higher alcohol tend to be in better quality.The correaltion is around 0.476.
+
+* Few correlation is existed between quality and citric.acid. But I found that \
+better quality wine has higher mean citric.acid. For example, the mean citric.acid\
+of quality 8 wine is 0.3911, while the mean citric.acid of quality 4 wine is 0.1742.
+
+### Did you observe any interesting relationships between the other features \
+(not the main feature(s) of interest)?
+
+* There???s a moderate correlation between alcohol and density. To be
+specific, wine with higher alcohol tend to have lower density. The correlation \
+is around -0.496.
+
+*citric.acid and density have a meaningful but small correlation around 0.36.
+
+* pH and density have a meaningful but small correlation around -0.34. To be \
+specific, when density increase, pH tend to decrease.
+
+* pH and citric.acid have a moderate negative correlation around -0.5419.
+
+### What was the strongest relationship you found?
+
+pH and citric.acid have the strongest relationship in my finding.
+
+# Multivariate Plots Section
+
+### Alcohol and density in quality category
+```{r echo=FALSE, message=FALSE, warning=FALSE, Multivariate_Plots_1}
+
+ggplot(aes(x=alcohol, y=density, color=quality_f), 
+       data = wine) +
+      geom_point(alpha=0.2, size=1) +
+      geom_smooth(method ="lm", se=FALSE,size=0.6)  +
+  scale_color_brewer(type='seq',
+                   guide=guide_legend(title='Quality'))
+
+```
+
+It's hard to see the results because of so much different colors. So I created \
+quality_bucket for better visualization.
+
+```{r echo=FALSE, message=FALSE, warning=FALSE, Multivariate_Plots_3}
+
+ggplot(aes(x=alcohol,y=density,color=quality_bucket),data=wine)+
+  geom_point(alpha=0.2,size=1)+
+  geom_smooth(linetype=1,method=lm,size=0.6)+
+  scale_color_brewer(type="seq",
+                     guide=guide_legend(title='Quality Groups'))
+
+```
+
+It seems like three quality groups follow the relationship between density and \
+alcohol. 
+
+### Density and pH in quality category
+```{r echo=FALSE, message=FALSE, warning=FALSE, Multivariate_Plots_4}
+
+ggplot(aes(x=density, y=pH,color=quality_bucket),data=wine)+
+  geom_point(alpha=0.2,size=1)+
+  geom_smooth(method=lm,se=FALSE,size=0.6)+
+  scale_color_brewer(type="seq",
+                     guide=guide_legend(title = 'Quality Groups'))
+
+```
+
+Quality groups follow the relationship of pH and density. And it's clear to see\
+that low quality group has shorter range of pH and density, compared with medium\
+and high quality group.
+
+### Citric.acid and pH in quality category
+
+```{r echo=FALSE, message=FALSE, warning=FALSE, Multivariate_Plots_5}
+
+ggplot(aes(x=citric.acid,y=pH,color=quality_bucket),data=wine)+
+  geom_point(alpha=0.3,size=1)+
+  geom_smooth(method=lm, se=FALSE, size=0.6)+
+  scale_color_brewer(type="seq",
+                     guide=guide_legend(title='Quality Groups'))
+
+```
+
+Quality groups follow the relationship of pH and citric.acid. The low quality\
+group has a relatively bigger range of citric.acid. Also, I noticed there's a lot\
+medium quality wine have 0 citric.acid, compared to low and high quality groups. 
+
+### Citric.acid and density in quality category
+
+```{r echo=FALSE, message=FALSE, warning=FALSE, Multivariate_Plots_6}
+
+ggplot(aes(x=citric.acid,y=density,color=quality_bucket),data=wine)+
+  geom_point(alpha=0.3,size=1)+
+  geom_smooth(method=lm, se=FALSE, size=0.6)+
+  scale_color_brewer(type="seq",
+                     guide=guide_legend(title='Quality Groups'))
+
+```
+
+### Calculate r-squared value 
+
+By calculating r-squared value, I want to test if the strongest variable alcohol\
+would strong r-squared value to proof its linear relationship with quality. 
+
+```{r message=FALSE, warning=FALSE, Multivariate_Plots_7}
+m1 <- lm(wine$quality ~ wine$alcohol)
+m2 <- lm(wine$quality ~ wine$alcohol+wine$density)
+m3 <- lm(wine$quality ~ wine$alcohol+wine$density+wine$citric.acid)
+m4 <- lm(wine$quality ~ wine$alcohol+wine$density+wine$citric.acid+wine$pH)
+
+summary(m1)$r.squared
+summary(m2)$r.squared
+summary(m3)$r.squared
+summary(m4)$r.squared
+```
+
+I chose alcohol (have the strongest correlation with quality among my interested\
+variable) to test the lineary relation with quality. Unfortunately, the r-squared \
+is not strong (0.22673).
+
+But when I added each of the variables of interest into this model, the r-squared\
+value did improve from 0.22673 to 0.2626.
+
+```{r message=FALSE, warning=FALSE, Multivariate_Plots_8}
+m5 <- lm(wine$density ~ wine$alcohol)
+summary(m5)$r.squared
+```
+
+Weak r-squared value to proof linear correlation between alcohol and density.
+
+# Multivariate Analysis
+
+### Talk about some of the relationships you observed in this part of the \
+investigation. Were there features that strengthened each other in terms of \
+looking at your feature(s) of interest?
+
+* From bivariate analysis I found out that density and alcohol have a modereate \
+negative correlation. And from multivarite analysis by adding quality groups into \
+the plot, I found out that quality gourps follow the relationship of density and\
+alcohol.
+
+* I noticed that among my featured variables, alcohol has the strongest \
+relationship with quality. So I calculated its r-squared value. Although the \
+r-squared value between them is not strong (around 0.22673), it did improve \
+from 0.22673 to 0.22626 when I added variables, such as \
+density, citric.acid and pH, into the model.
+
+### Were there any interesting or surprising interactions between features?
+
+* Depending on the Pearson correlation value, I thought the r-squared value \
+between alcohol and quality must be strong, at least bigger than 0.5. But it \
+turned out my suspection was wrong. But it did surprised my that the r-squared \
+value increased every time I added another featured variables into the model. 
+
+* It also surprised me that quality groups all follow the meaningful relationships \
+which I found in bivariate analysis. To be specific, quality groups follow the \
+relationships of alcohol and density, density and pH, pH and citric.acid.
+
+### OPTIONAL: Did you create any models with your dataset? Discuss the \
+strengths and limitations of your model.
+
+I created a math linear model.I sed quality as dependent variable, and alcohol as\
+independent variable. After I found out the r-squared value is not strong enough,\
+I added citric.acid, density, and pH one at a time as independent variable into \
+the model. The result r-squared value did improve, but still not strong enough.
+
+The model clearly shows each r-squared value when you added a new featrued variable.\
+So it's easy and clear to see the result that if they have linear correlation. \
+But there's limitations of this model. Since I didn't put all the variables in the\
+dataset to test the model. There may still be some major variable that I didn't\
+include in the model.
+
+------
+
+# Final Plots and Summary
+
+### Plot One
+```{r echo=FALSE, Plot_One}
+ggplot(aes(x=alcohol,y=density,color=quality_bucket),data=wine)+
+  geom_point(alpha=0.2,size=1)+
+  geom_smooth(linetype=1,method=lm,size=0.6,se=FALSE)+
+  scale_color_brewer(type="seq",
+                     guide=guide_legend(title='Quality Groups'))+
+  labs(x="Alcohol (% by volume)",
+       y="Density (g / cm^3)",
+       title="Density and Alcohol in Quality Groups")
+```
+
+### Description One
+Alcohol and density have a moderate negative correlation around -0.496. Wine with\
+higher alcohol percentage by volume tend to have lower density (g / cm^3). And\
+all wine quality groups follow the relationship of alcohol and density.
+
+### Plot Two
+```{r echo=FALSE, Plot_Two}
+ggplot(aes(x=quality_f, y=alcohol,color=quality_f), data= wine)+
+  geom_boxplot()+
+  geom_jitter(alpha=0.3,size=1)+
+  scale_color_brewer(type="seq",
+                     guide=guide_legend(title='Quality Groups'))+
+  labs(x="Quality",
+       y="Alcohol (% by volume)",
+       title="Alcohol and Quality")
+
+```
+
+### Description Two
+Alcohol have strongest correlation with quality around 0.476. Wines with higher \
+alcohol percentage by volume tend to be in better quality.But I did notice that \
+wine with quality scoring 5 is a bit out of the line. It might because there's \
+still potential variables (toghether with alcohol to influence quality) that I \
+didn't discuss.
+
+### Plot Three
+```{r echo=FALSE, Plot_Three}
+ggplot(aes(x=citric.acid,y=pH,color=quality_bucket),data=wine)+
+  geom_point(alpha=0.3,size=1)+
+  geom_smooth(method=lm, se=FALSE, size=0.6)+
+  scale_color_brewer(type="seq",
+                     guide=guide_legend(title='Quality Groups'))+
+  labs(x="Citric acid (g / dm^3)",
+       y="pH",
+       title="pH and Citric Acid")
+```
+
+### Description Three
+pH and citric acid (g / dm^3) have a moderate negative correlation around -0.5419.\
+Wine with higher citric acid (g / dm^3 ) tend to have lower pH. And all wine quality\
+groups follow this relationship of pH and citric acid. Also, low quality group of\
+wine tend to have larger range of citric acid (g / dm^3), compared to medium and \
+high quality group of wines.
+
+
+# Reflection
+
+This Red Wine Quality dataset contained 1,599 observations of red wines. There're\
+12 variables in the dataset, including 11 variables of chemical properties in \
+these wines, and 1 output variable of wine quality, which graded by experts and \
+is between 0 (very bad) and 10 (very excellent).
+
+I'm interested in exploring how these chemical properties influence the quality \
+of wine. Through univariate, bivariate, multivariate analysis and statistical \
+analysis, I tested different relationships between these variables. 
+
+Among the variables included in the dataset, alcohol had the strongest correlation\
+with wine quality. The correlation is around 0.476. Wines with higher alcohol \
+percentage by volume tend to be in better quality. Unfortunately, the calculated\
+r-squared value between alcohol and quality is not strong (around 0.22673). But \
+when I added each of the variables (which I'm interested in this dataset) one at \
+a time into this model, the r-squared value did improve from 0.22673 to 0.2626.
+
+I think the limitations of this dataset would be one of the major challenges. \
+Amond 1,599 obeservations of wines, 82.4% of wines received score of 5 or 6. \
+Around 4% of wines received score of 3 or 4, and 13.6% of wines received score \
+of 7 or 8. It would be better to have a larger variety of quality score for the \
+dataset.
+
+For future further analysis, it would be interesting and meanfing to combine or\
+compare this dataset with the white wine datast. So we can see how these chemical\
+properties' correlation with quality changed.
+
+# Reference:
+* P. Cortez, A. Cerdeira, F. Almeida, T. Matos and J. Reis.\ 
+Modeling wine preferences by data mining from physicochemical properties.\
+In Decision Support Systems, Elsevier, 47(4):547-553. ISSN: 0167-9236.
+* https://www.linkedin.com/pulse/regression-analysis-how-do-i-interpret-r-squared-assess-gaurhari-dass
+* https://discussions.udacity.com/t/how-to-quantify-correlation-between-categorical-and-numerical-variable/47067
+* https://stackoverflow.com/questions/21945156/ggplot-geom-boxplot-and-geom-jitter
+* https://briatte.github.io/ggcorr/#controlling-the-coefficient-labels
+
