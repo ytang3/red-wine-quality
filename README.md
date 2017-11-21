@@ -10,5 +10,4 @@ of wine. Through univariate, bivariate, multivariate analysis and statistical
 analysis, I tested different relationships between these variables.
 
 This project was completed in an R Markdown formatted file. You can view the 
-HTML output by downloading and opening redwine_Yiyi Tang.html or visiting this link:
-file:///Users/tangyiyi/Downloads/EDA%20Project-3/redwine_Yiyi%20Tang.html
+HTML output by downloading and opening redwine_Yiyi Tang.html.
