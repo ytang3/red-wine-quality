@@ -12,8 +12,12 @@ analysis, I tested different relationships between these variables.
 This project was completed in an R Markdown formatted file. You can view the 
 HTML output by downloading and opening redwine_Yiyi Tang.html.
 
-#Files:
-#README.md: this file
-#redwine.Rmd: project written in R Markdown format
-#redwine_Yiyi Tang.html: project knitted to html version. 
-#wineQualityReds.csv: data
+Files:
+
+README.md: this file
+
+redwine.Rmd: project written in R Markdown format
+
+redwine_Yiyi Tang.html: project knitted to html version. 
+
+wineQualityReds.csv: data
