@@ -1,4 +1,4 @@
-# red-wine-quality
+# Red Wine Quality
 
 This Red Wine Quality dataset contained 1,599 observations of red wines. There’re
 12 variables in the dataset, including 11 variables of chemical properties in
@@ -9,10 +9,10 @@ I’m interested in exploring how these chemical properties influence the qualit
 of wine. Through univariate, bivariate, multivariate analysis and statistical
 analysis, I tested different relationships between these variables.
 
-This project was completed in an R Markdown formatted file. You can view the 
+* This project was completed in an R Markdown formatted file. You can view the 
 HTML output by downloading and opening redwine_Yiyi Tang.html.
 
-Files:
+## Files:
 
 README.md: this file
 
