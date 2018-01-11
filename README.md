@@ -19,5 +19,6 @@ HTML output by downloading and opening redwine_Yiyi Tang.html.
 
 * README.md: this file
 * redwine.Rmd: project written in R Markdown format
-* redwine_Yiyi Tang.html: project knitted to html version. 
+* redwine_Yiyi Tang.html: project report. 
+* improved_redwine_Yiyi Tang.html: improved project report.
 * wineQualityReds.csv: data
